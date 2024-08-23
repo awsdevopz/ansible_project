@@ -1,5 +1,5 @@
 [liferay]
-liferay_server	ansible_host=54.157.211.209
+liferay_server	ansible_host=3.86.113.78
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
