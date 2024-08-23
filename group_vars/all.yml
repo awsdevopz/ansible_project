@@ -1,0 +1,15 @@
+---
+common_vars:
+  liferay_version: 7.4.3.112-ga112
+  liferay_user: www-data
+  postgres_version: 14
+  postgres_user: postgres
+  liferay_db_name: liferay_db
+  liferay_db_user: liferayuser
+
+liferay_vars:
+  liferay_host: "{{ hostvars['liferay_server'].ansible_host }}"
+
+postgres_vars:
+  postgresql_host: "{{ hostvars['liferay_server'].ansible_host }}"
+  postgresql_port: 5432

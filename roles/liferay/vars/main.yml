@@ -1,0 +1,6 @@
+---
+liferay_version: "7.4.3.112-ga112"
+postgresql_host: "{{ hostvars['liferay_server'].ansible_host }}"
+postgresql_port: "5432"
+liferay_db_name: "liferay_db"
+liferay_db_user: "liferayuser"

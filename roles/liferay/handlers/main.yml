@@ -1,0 +1,4 @@
+- name: restart liferay
+  systemd:
+    name: liferay
+    state: restarted

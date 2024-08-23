@@ -1,0 +1,82 @@
+---
+- name: Ensure /tmp/ansible directory exists
+  file:
+    path: /tmp/ansible
+    state: directory
+    mode: '0777'
+
+- name: Ensure required packages are installed (Debian-based)
+  apt:
+    name:
+      - wget
+      - unzip
+      - openjdk-11-jdk  # Added Java installation
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Ensure required packages are installed (Red Hat-based)
+  yum:
+    name:
+      - wget
+      - unzip
+      - java-11-openjdk-devel  # Added Java installation
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Download Liferay
+  get_url:
+    url: "https://github.com/liferay/liferay-portal/releases/download/7.4.3.112-ga112/liferay-ce-portal-tomcat-7.4.3.112-ga112-20240226061339195.tar.gz"
+    dest: "/tmp/liferay.tar.gz"
+    mode: '0644'  # Adjusted to 0644 for security reasons
+
+- name: Extract Liferay
+  unarchive:
+    src: "/tmp/liferay.tar.gz"
+    dest: "/opt"
+    remote_src: yes
+
+- name: Check if the destination directory exists
+  stat:
+    path: /opt/liferay
+  register: liferay_dir
+
+- name: Rename extracted folder
+  command: mv /opt/liferay-ce-portal-{{ liferay_version }} /opt/liferay
+  become: true
+  when: not liferay_dir.stat.exists
+
+- name: Configure Liferay to use PostgreSQL
+  template:
+    src: portal-ext.properties.j2
+    dest: /opt/liferay/tomcat-9.0.83/webapps/ROOT/WEB-INF/classes/portal-ext.properties
+
+- name: Ensure correct ownership for Liferay directory
+  file:
+    path: /opt/liferay
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: true
+  become: true
+
+- name: Ensure specific Liferay scripts are executable
+  file:
+    path: "/opt/liferay/tomcat-9.0.83/bin/{{ item }}"
+    mode: 'a+x'
+  with_items:
+    - startup.sh
+    - shutdown.sh
+    - catalina.sh
+  become: true
+- name: Create Liferay service script
+  template:
+    src: liferay.service.j2
+    dest: /etc/systemd/system/liferay.service
+
+- name: Reload systemd and enable/start Liferay service
+  shell: |
+    systemctl daemon-reload
+    systemctl enable liferay
+    systemctl start liferay
+  become: true

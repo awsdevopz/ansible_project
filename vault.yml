@@ -1,0 +1,2 @@
+vault_liferay_db_password: 'liferay123'
+vault_postgres_db_password: 'postgres123'

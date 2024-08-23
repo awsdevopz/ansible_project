@@ -1,0 +1,15 @@
+[Unit]
+Description=Liferay
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/opt/liferay/tomcat-9.0.83/bin/startup.sh
+ExecStop=/opt/liferay/tomcat-9.0.83/bin/shutdown.sh
+User=www-data
+Group=www-data
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

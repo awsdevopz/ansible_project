@@ -1,0 +1,14 @@
+---
+- name: Install Liferay
+  become: yes
+  apt:
+    name:
+      - liferay
+    state: present
+
+- name: Configure Liferay
+  template:
+    src: liferay-config.template
+    dest: /etc/liferay/liferay-config.xml
+  become: yes
+

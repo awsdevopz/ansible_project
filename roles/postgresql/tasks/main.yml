@@ -1,0 +1,89 @@
+---
+- name: Ensure /tmp/ansible directory exists with correct permissions
+  become: yes
+  file:
+    path: /tmp/ansible
+    state: directory
+    mode: '1777'
+
+- name: Install required packages (Debian-based)
+  become: yes
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install required packages (Red Hat-based)
+  become: yes
+  yum:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Ensure PostgreSQL is started and enabled (Debian-based)
+  become: yes
+  systemd:
+    name: postgresql
+    enabled: yes
+    state: started
+  when: ansible_os_family == "Debian"
+
+- name: Ensure PostgreSQL is started and enabled (Red Hat-based)
+  become: yes
+  systemd:
+    name: postgresql
+    enabled: yes
+    state: started
+  when: ansible_os_family == "RedHat"
+
+- name: Change password for postgres user
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    name: postgres
+    password: "{{ vault_postgres_db_password }}"
+    state: present
+  register: checkout
+
+- name: Configure pg_hba.conf
+  template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/14/main/pg_hba.conf
+  notify: restart postgresql
+
+
+- name: Update PostgreSQL listen addresses
+  become: true
+  lineinfile:
+    path: /etc/postgresql/14/main/postgresql.conf
+    regexp: "^#?listen_addresses\\s*=\\s*'localhost'"
+    line: "listen_addresses = '*'"
+    state: present
+  notify: restart postgresql
+
+
+- name: Create PostgreSQL database for Liferay
+  become_user: postgres
+  postgresql_db:
+    name: "{{ common_vars.liferay_db_name }}"
+    login_user: 'postgres'
+    login_password: '{{ vault_postgres_db_password }}'
+    state: present
+
+- name: Create PostgreSQL user for Liferay
+  become_user: postgres
+  postgresql_user:
+    name: "{{ common_vars.liferay_db_user }}"
+    password: "{{ vault_liferay_db_password }}"
+    db: "{{ common_vars.liferay_db_name }}"
+    ##login_user: 'postgres'
+    ##login_password: '{{ vault_postgres_db_password }}'
+    priv: ALL
+    state: present
