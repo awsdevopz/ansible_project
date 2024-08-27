@@ -5,4 +5,4 @@ jdbc.default.driverClassName=org.postgresql.Driver
 jdbc.default.url=jdbc:postgresql://{{ postgres_vars.postgresql_host }}:{{ postgres_vars.postgresql_port }}/{{ common_vars.liferay_db_name }}
 jdbc.default.username={{ common_vars.liferay_db_user }}
 jdbc.default.password={{ vault_liferay_db_password }}
-web.server.host={{ common_vars.liferay_host }}
+web.server.host={{ liferay_vars.liferay_host }}
