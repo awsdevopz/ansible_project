@@ -1,5 +1,5 @@
 [liferay]
-liferay_server	ansible_host=3.86.113.78
+liferay_server	ansible_host=3.86.113.78  ansible_ssh_private_key_file=~/.ssh/
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
